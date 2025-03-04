@@ -1,5 +1,5 @@
 {
-  "name": "one-way-bridge",
+  "name": "one-way-bridge-backend",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts"

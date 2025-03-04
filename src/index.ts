@@ -61,7 +61,7 @@ io.on("connection", (socket) => {
     socket.join(simulationRoom);
 
     // Notify the user that he has joined the simulation.
-    socket.emit("join-status", {
+    socket.emit("joined-simulation", {
       room: simulationRoom,
       carId: socket.id,
     });

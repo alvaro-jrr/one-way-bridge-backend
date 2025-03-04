@@ -79,10 +79,10 @@ export class BridgeQueue {
   tick() {
     // Update the time spent waiting.
     this.queue = this.queue.map((car) => {
-      const nextWaitingTime =
-        car.currentWaitingTime > 0 ? car.currentWaitingTime - 1 : 0;
+      const nextBridgeTime =
+        car.currentBridgeTime > 0 ? car.currentBridgeTime - 1 : 0;
 
-      return { ...car, currentWaitingTime: nextWaitingTime };
+      return { ...car, currentBridgeTime: nextBridgeTime };
     });
   }
 
@@ -93,8 +93,8 @@ export class BridgeQueue {
   removeCars(cars: Car[]) {
     if (!cars.length) return;
 
-    this.queue = this.queue.filter((car) =>
-      cars.some((item) => item.id == car.id)
-    );
+    const ids = cars.map((car) => car.id);
+
+    this.queue = this.queue.filter((car) => !ids.includes(car.id));
   }
 }

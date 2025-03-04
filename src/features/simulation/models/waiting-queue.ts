@@ -99,9 +99,9 @@ export class WaitingQueue {
   removeCars(cars: Car[]) {
     if (!cars.length) return;
 
-    this.queue = this.queue.filter((car) =>
-      cars.some((item) => item.id == car.id)
-    );
+    const ids = cars.map((car) => car.id);
+
+    this.queue = this.queue.filter((car) => !ids.includes(car.id));
   }
 
   /**
