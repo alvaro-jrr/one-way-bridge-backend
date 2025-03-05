@@ -22,7 +22,7 @@ const server = serve(
 // The WebSocket server.
 const io = new SocketIoServer(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:4173"],
     methods: ["GET", "POST"],
   },
 });
@@ -30,9 +30,23 @@ const io = new SocketIoServer(server, {
 // The simulation.
 const simulation = new Simulation();
 let simulationRoom: string | null = null;
+let simulationInterval: NodeJS.Timeout | null = null;
 
 // The players.
 let players: string[] = [];
+
+/**
+ * Handles the simulation interval.
+ */
+const onSimulationInterval = () => {
+  if (simulationRoom === null) return;
+
+  // Notify the players about the simulation status.
+  io.to(simulationRoom).emit("simulation-status", simulation.getStatus());
+
+  // Run the simulation.
+  simulation.run();
+};
 
 io.on("connection", (socket) => {
   console.log(`An user has connected: ${socket.id}`);
@@ -44,14 +58,11 @@ io.on("connection", (socket) => {
 
     const newCar = parsedNewCar.output;
 
-    // Add the car to the simulation.
-    simulation.addCar({
-      id: socket.id,
-      car: newCar,
-    });
-
     if (simulationRoom === null) {
       simulationRoom = `simulation-${socket.id}`;
+
+      // Start the simulation interval.
+      simulationInterval = setInterval(onSimulationInterval, 1000);
     }
 
     // Add player.
@@ -62,13 +73,18 @@ io.on("connection", (socket) => {
 
     // Notify the user that he has joined the simulation.
     socket.emit("joined-simulation", {
-      room: simulationRoom,
       carId: socket.id,
     });
 
     console.log(
       `An user has joined the simulation: ${socket.id} in ${simulationRoom}`
     );
+
+    // Add the car to the simulation.
+    simulation.addCar({
+      id: socket.id,
+      car: newCar,
+    });
   });
 
   // Notify that an user has disconnected.
@@ -76,19 +92,18 @@ io.on("connection", (socket) => {
     // Remove the player from the players array.
     players = players.filter((player) => player !== socket.id);
 
+    // Clear the simulation if there are no players.
+    if (!players.length) {
+      // Clear the simulation interval.
+      if (simulationInterval) clearInterval(simulationInterval);
+
+      // Clear the simulation room.
+      simulationRoom = null;
+    }
+
+    // Remove the car from the simulation.
+    simulation.removeCar(socket.id);
+
     console.log(`An user has disconnected: ${socket.id}`);
   });
 });
-
-// Run the simulation every second.
-setInterval(() => {
-  console.log("Running the simulation...");
-
-  if (simulationRoom === null) return;
-
-  // Run the simulation.
-  simulation.run();
-
-  // Notify the players about the simulation status.
-  io.to(simulationRoom).emit("simulation-status", simulation.getStatus());
-}, 1000);
