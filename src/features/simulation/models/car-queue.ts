@@ -57,10 +57,13 @@ export abstract class CarQueue {
    * @returns Whether the car was removed.
    */
   removeById(id: string) {
-    const carIndex = this.queue.findIndex((c) => c.id === id);
+    const values = [...this.queue];
+    const carIndex = values.findIndex((car) => car.id === id);
     if (carIndex === -1) return false;
 
-    this.queue = this.queue.splice(carIndex, 1);
+    values.splice(carIndex, 1);
+    this.queue = values;
+
     return true;
   }
 
