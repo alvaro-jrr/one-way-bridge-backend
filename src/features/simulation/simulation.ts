@@ -55,7 +55,8 @@ export class Simulation {
    */
   getStatus() {
     return {
-      waitingQueue: this.waitingQueue.getCars(),
+      leftWaitingQueue: this.waitingQueue.getCarsByDirection("left-to-right"),
+      rightWaitingQueue: this.waitingQueue.getCarsByDirection("right-to-left"),
       bridgeQueue: this.bridgeQueue.getCars(),
     };
   }
@@ -64,26 +65,26 @@ export class Simulation {
    * Move the cars that have already crossed the bridge to the other side.
    */
   private moveBridgeCars() {
-    // If the bridge is empty, we don't need to move any cars.
-    if (this.bridgeQueue.isEmpty()) return;
-
-    const carsToCross = this.bridgeQueue.getAlreadyCrossedCars();
-    if (carsToCross.length === 0) return;
+    // Get the cars that have completed the bridge.
+    const completedBridgeCars = this.bridgeQueue.getCompletedBridgeCars();
+    if (completedBridgeCars.length === 0) return;
 
     // Remove the cars from the bridge.
-    this.bridgeQueue.removeCars(carsToCross);
+    this.bridgeQueue.removeMany(completedBridgeCars);
+
+    const direction =
+      completedBridgeCars[0].direction === "left-to-right"
+        ? "right-to-left"
+        : "left-to-right";
 
     // Move the cars to the other side.
-    const currentDirection = carsToCross[0].direction;
-
     this.waitingQueue.addMany(
-      carsToCross.map((car) => ({
-        ...car,
-        direction:
-          currentDirection === "left-to-right"
-            ? "right-to-left"
-            : "left-to-right",
-      }))
+      completedBridgeCars
+        .filter((car) => !car.isRemoved)
+        .map((car) => ({
+          ...car,
+          direction,
+        }))
     );
   }
 
@@ -99,14 +100,22 @@ export class Simulation {
     if (!nextCar) return;
 
     // Get the cars to cross the bridge by direction.
-    const carsToCross = this.waitingQueue.getCarsToCrossByDirection(
-      nextCar.direction
-    );
+    const carsToCross = this.waitingQueue.getCarsToCross(nextCar.direction);
 
     // Remove the cars from the waiting queue.
-    this.waitingQueue.removeCars(carsToCross);
+    this.waitingQueue.removeMany(carsToCross);
 
     // Add the cars to the bridge.
     this.bridgeQueue.addMany(carsToCross);
+  }
+
+  /**
+   * Remove a car from the simulation.
+   * @param id The id of the car to remove.
+   */
+  removeCar(id: string) {
+    if (this.waitingQueue.removeById(id)) return;
+
+    this.bridgeQueue.markCarAsRemoved(id);
   }
 }

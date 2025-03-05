@@ -1,11 +1,9 @@
 import type { Car } from "./car";
+import { CarQueue } from "./car-queue";
 
-export class BridgeQueue {
-  /** The queue of cars. */
-  private queue: Car[];
-
+export class BridgeQueue extends CarQueue {
   constructor() {
-    this.queue = [];
+    super();
   }
 
   /**
@@ -15,25 +13,9 @@ export class BridgeQueue {
   add(car: Car) {
     this.queue.push({
       ...car,
-      currentBridgeTime: this.getCarEstimatedBridgeTime(car),
+      currentBridgeTime: this.getEstimatedBridgeTime(car),
       isCrossing: true,
     });
-  }
-
-  /**
-   * Add multiple cars to the queue.
-   * @param cars The cars to add.
-   */
-  addMany(cars: Car[]) {
-    for (const car of cars) this.add(car);
-  }
-
-  /**
-   * Check if the queue is empty.
-   * @returns Whether the queue is empty.
-   */
-  isEmpty() {
-    return this.queue.length === 0;
   }
 
   /**
@@ -41,7 +23,7 @@ export class BridgeQueue {
    * @param car The car.
    * @returns The estimated bridge time.
    */
-  getCarEstimatedBridgeTime(car: Car) {
+  private getEstimatedBridgeTime(car: Car) {
     // As there are no cars in the queue, the estimated bridge time is the car bridge time.
     if (!this.queue.length) return car.bridgeTime;
 
@@ -57,19 +39,11 @@ export class BridgeQueue {
   }
 
   /**
-   * Get the cars.
-   * @returns The cars.
-   */
-  getCars() {
-    return this.queue;
-  }
-
-  /**
-   * Get the cars that have already crossed the bridge.
+   * Get the cars that have completed the bridge.
    * And remove them from the queue.
-   * @returns The cars that have already crossed the bridge.
+   * @returns The cars that have completed the bridge.
    */
-  getAlreadyCrossedCars() {
+  getCompletedBridgeCars() {
     return this.queue.filter((car) => car.currentBridgeTime === 0);
   }
 
@@ -87,14 +61,13 @@ export class BridgeQueue {
   }
 
   /**
-   * Remove the cars from the queue.
-   * @param cars The cars to remove.
+   * Mark a car as removed.
+   * @param id The id of the car to remove.
    */
-  removeCars(cars: Car[]) {
-    if (!cars.length) return;
+  markCarAsRemoved(id: string) {
+    const carIndex = this.queue.findIndex((car) => car.id === id);
+    if (carIndex === -1) return;
 
-    const ids = cars.map((car) => car.id);
-
-    this.queue = this.queue.filter((car) => !ids.includes(car.id));
+    this.queue[carIndex].isRemoved = true;
   }
 }

@@ -1,11 +1,9 @@
 import type { Car, Direction } from "./car";
+import { CarQueue } from "./car-queue";
 
-export class WaitingQueue {
-  /** The queue of cars. */
-  private queue: Car[];
-
+export class WaitingQueue extends CarQueue {
   constructor() {
-    this.queue = [];
+    super();
   }
 
   /**
@@ -23,27 +21,12 @@ export class WaitingQueue {
   }
 
   /**
-   * Add multiple cars to the queue.
-   * @param cars The cars to add.
-   */
-  addMany(cars: Car[]) {
-    for (const car of cars) this.add(car);
-  }
-
-  /**
-   * Get the cars.
+   * Get the cars by direction.
+   * @param direction The direction.
    * @returns The cars.
    */
-  getCars() {
-    return this.queue;
-  }
-
-  /**
-   * Check if the queue is empty.
-   * @returns Whether the queue is empty.
-   */
-  isEmpty() {
-    return this.queue.length === 0;
+  getCarsByDirection(direction: Direction) {
+    return this.queue.filter((car) => car.direction === direction);
   }
 
   /** Get the next car to cross the bridge. */
@@ -56,19 +39,14 @@ export class WaitingQueue {
    * And remove them from the queue.
    * @returns The cars to cross the bridge.
    */
-  getCarsToCross() {
-    return this.queue.filter((car) => car.currentWaitingTime === 0);
-  }
+  getCarsToCross(direction?: Direction) {
+    return this.queue.filter((car) => {
+      if (direction) {
+        return car.currentWaitingTime === 0 && car.direction === direction;
+      }
 
-  /**
-   * Get the cars to cross the bridge by direction.
-   * @param direction The direction of the cars to cross.
-   * @returns The cars to cross the bridge.
-   */
-  getCarsToCrossByDirection(direction: Direction) {
-    return this.queue.filter(
-      (car) => car.currentWaitingTime === 0 && car.direction === direction
-    );
+      return car.currentWaitingTime === 0;
+    });
   }
 
   /**
@@ -82,26 +60,6 @@ export class WaitingQueue {
 
       return { ...car, currentWaitingTime: nextWaitingTime };
     });
-  }
-
-  /**
-   * Remove a car from the queue.
-   * @param car The car to remove.
-   */
-  removeCar(car: Car) {
-    this.queue = this.queue.filter((item) => item.id !== car.id);
-  }
-
-  /**
-   * Remove the cars from the queue.
-   * @param cars The cars to remove.
-   */
-  removeCars(cars: Car[]) {
-    if (!cars.length) return;
-
-    const ids = cars.map((car) => car.id);
-
-    this.queue = this.queue.filter((car) => !ids.includes(car.id));
   }
 
   /**
