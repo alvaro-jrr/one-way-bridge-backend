@@ -1,0 +1,25 @@
+@startuml One-Way Bridge Simulation
+
+' Definición de actores
+actor "Conductor" as Driver
+actor "Sistema de Control" as ControlSystem
+
+' Casos de uso principales
+rectangle "Sistema de Simulación de Puente de Una Vía" {
+    usecase "Unirse a la Simulación" as JoinSimulation 
+    usecase "Salir de la Simulación" as ExitSimulation
+
+    usecase "Notificar estado de la Simulación" as NotifySimulationState
+    usecase "Gestionar cola de espera" as ManageQueue
+    usecase "Gestionar estado del puente" as MonitorBridge
+}
+
+' Relaciones
+Driver --> JoinSimulation
+Driver --> ExitSimulation
+
+ControlSystem --> MonitorBridge
+ControlSystem --> ManageQueue
+ControlSystem --> NotifySimulationState
+
+@enduml 

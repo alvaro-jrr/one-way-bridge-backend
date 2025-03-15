@@ -1,0 +1,18 @@
+@startuml One-Way Bridge Sequence
+
+actor "Conductor" as Driver
+participant "Sistema de Control" as System
+
+== Uniendose a la Simulación ==
+Driver -> System: Petición para unirse a la simulación
+
+== Participación Activa ==
+loop While in simulation
+    System -> Driver: Notificar estado de simulación
+end
+
+== Saliendo de Simulación ==
+Driver -> System: Petición para salir de la simulación
+System -> System: Actualizar cola de espera o puente
+
+@enduml 
