@@ -32,8 +32,8 @@ const simulation = new Simulation();
 let simulationRoom: string | null = null;
 let simulationInterval: NodeJS.Timeout | null = null;
 
-// The players.
-let players: string[] = [];
+// The drivers.
+let drivers: string[] = [];
 
 /**
  * Handles the simulation interval.
@@ -66,7 +66,7 @@ io.on("connection", (socket) => {
     }
 
     // Add player.
-    players.push(socket.id);
+    drivers.push(socket.id);
 
     // Join the user to the simulation room.
     socket.join(simulationRoom);
@@ -89,11 +89,11 @@ io.on("connection", (socket) => {
 
   // Notify that an user has disconnected.
   socket.on("disconnect", () => {
-    // Remove the player from the players array.
-    players = players.filter((player) => player !== socket.id);
+    // Remove the driver from the drivers array.
+    drivers = drivers.filter((driver) => driver !== socket.id);
 
-    // Clear the simulation if there are no players.
-    if (!players.length) {
+    // Clear the simulation if there are no drivers.
+    if (!drivers.length) {
       // Clear the simulation interval.
       if (simulationInterval) clearInterval(simulationInterval);
 
